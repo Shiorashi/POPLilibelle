@@ -88,6 +88,14 @@ export default function Banner() {
         MouseDown(false);
     };
 
+    const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+      handleMouseDown(e as unknown as React.MouseEvent<HTMLDivElement>);
+    };
+    
+    const handleTouchEnd = () => {
+        handleMouseUp();
+    };
+
     const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setError('');
@@ -119,6 +127,8 @@ export default function Banner() {
             className={`relative w-full h-screen ${nunito.className}`}
             onMouseDown={handleMouseDown} 
             onMouseUp={handleMouseUp}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
             style={{ userSelect: 'none' }}
         >
             <div className={`h-16 flex flex-row fixed top-0 left-0 right-0 z-30`}>
