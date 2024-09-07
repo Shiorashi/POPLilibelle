@@ -1,8 +1,10 @@
-import TopMenu from '@/components/TopMenu';
-import './globals.css';
-import { Inter } from 'next/font/google';
+import './globals.css'; // Import your global CSS
+import { Nunito } from '@next/font/google';
 
-const inter = Inter({ subsets: ['latin'] });
+const nunito = Nunito({
+  subsets: ['latin'],
+  weight: ['400', '700'], // Include weights you need
+});
 
 export default function RootLayout({
   children,
@@ -12,7 +14,7 @@ export default function RootLayout({
 
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={nunito.className}>
         {children}
       </body>
     </html>
