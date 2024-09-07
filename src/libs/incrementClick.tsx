@@ -2,7 +2,7 @@ export default async function incrementClick(token:string) {
     if (!token) {
         console.log(token);
     }
-    const response = await fetch(`http://localhost:5000/api/v1/users/click`, {
+    const response = await fetch(`${process.env.BACKEND_URL}/api/v1/users/click`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
