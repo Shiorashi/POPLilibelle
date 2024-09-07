@@ -20,15 +20,16 @@ export default function Banner() {
     const [error, setError] = useState('');
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [token, setToken] = useState('');
-    const [leaderboard, setLeaderboard] = useState([]);
+    const [leaderboard, setLeaderboard] = useState<User[]>([]);
     const [showLeaderboard, setShowLeaderboard] = useState(false);
+    
 
     const fetchLeaderboard = async () => {
       try {
-          const response = await fetch('http://localhost:5000/api/v1/users');
+          const response = await fetch(`${process.env.BACKEND_URL}/api/v1/users`);
           const data = await response.json();
           // Sort users by click count in descending order
-          const sortedUsers = data.data.sort((a, b) => b.clicked - a.clicked);
+          const sortedUsers = (data.data as User[]).sort((a, b) => b.clicked - a.clicked);
           setLeaderboard(sortedUsers);
       } catch (err) {
           console.error('Failed to fetch leaderboard:', err);
@@ -70,12 +71,13 @@ export default function Banner() {
         }, 50); // Animation duration
     };
 
-    const handleMouseDown = (e) => {
-        if (e.target.closest('.leaderboard-toggle')) {
+    const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+        const target = e.target as HTMLElement;
+        if (target.closest('.leaderboard-toggle')) {
           e.stopPropagation(); // Prevent counting click
           return; // Exit early
         }
-        if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') {
+        if (target.tagName === 'INPUT' || target.tagName === 'BUTTON') {
             return;
         }
         MouseDown(true);
@@ -86,7 +88,7 @@ export default function Banner() {
         MouseDown(false);
     };
 
-    const handleLogin = async (e) => {
+    const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setError('');
 
@@ -206,7 +208,7 @@ export default function Banner() {
                   <div className="bg-pink-200 p-4 rounded bg-opacity-0">
                     <h2 className="text-2xl font-bold mb-4 text-center">Leaderboard</h2>
                     <ul>
-                        {leaderboard.map((user, index) => (
+                        {leaderboard.map((user: User, index) => (
                             <li key={user._id} className="flex justify-between py-2">
                                 <span>{index + 1}. {user.username}</span>
                                 <span>{user.clicked} clicks</span>
