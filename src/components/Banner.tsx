@@ -15,6 +15,7 @@ const nunito = Nunito({
 export default function Banner() {
     const [clicked, addClick] = useState(0);
     const [onMouseDowned, MouseDown] = useState(false);
+    const [onTouched, Touched] = useState(false);
     const [isAnimating, setIsAnimating] = useState(false);
     const [username, setUsername] = useState('');
     const [error, setError] = useState('');
@@ -89,11 +90,11 @@ export default function Banner() {
     };
 
     const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
-      handleMouseDown(e as unknown as React.MouseEvent<HTMLDivElement>);
+      Touched(true);
     };
     
     const handleTouchEnd = () => {
-        handleMouseUp();
+      Touched(false);
     };
 
     const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -203,7 +204,7 @@ export default function Banner() {
                 {/* Popcat Image */}
                 <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2">
                     <Image 
-                        src={onMouseDowned && !showLeaderboard ? "/img/LiliPOP_2.png" : "/img/LiliPOP_1.png"} 
+                        src={(onMouseDowned || onTouched) && !showLeaderboard ? "/img/LiliPOP_2.png" : "/img/LiliPOP_1.png"} 
                         alt="POP_Lili" 
                         width={700}
                         height={700}
