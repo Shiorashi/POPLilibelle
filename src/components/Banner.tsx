@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { debounce } from 'lodash';
+import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import userLogIn from '@/libs/userLogin';
@@ -50,6 +51,13 @@ export default function Banner() {
       }
     };
     
+    const incrementClickDebounced = useCallback(
+        debounce((token) => {
+            incrementClick(token); // Debounce only the API call
+        }, 1000), // 1-second debounce
+        []
+    );
+
     const click = async () => {
         if (showLeaderboard) return;
  
@@ -71,6 +79,12 @@ export default function Banner() {
             setIsAnimating(false);
         }, 50); // Animation duration
     };
+
+    useEffect(() => {
+        return () => {
+            incrementClickDebounced.cancel(); // Cleanup debounce on unmount
+        };
+    }, [incrementClickDebounced]);
 
     const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
         const target = e.target as HTMLElement;
