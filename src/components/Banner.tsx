@@ -24,6 +24,7 @@ export default function Banner() {
     const [token, setToken] = useState('');
     const [leaderboard, setLeaderboard] = useState<User[]>([]);
     const [showLeaderboard, setShowLeaderboard] = useState(false);
+    const [hasTriggeredClick, setHasTriggeredClick] = useState(false);
     
 
     const fetchLeaderboard = async () => {
@@ -95,7 +96,7 @@ export default function Banner() {
         if (target.tagName === 'INPUT' || target.tagName === 'BUTTON') {
             return;
         }
-        if (!onTouched && !onMouseDowned) {
+        if (!onTouched && !onMouseDowned && !hasTriggeredClick) {
             MouseDown(true);
             click();
         }
@@ -103,10 +104,11 @@ export default function Banner() {
 
     const handleMouseUp = () => {
         MouseDown(false);
+        setHasTriggeredClick(false);
     };
 
     const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
-        if (!onMouseDowned && !onTouched) {
+        if (!onMouseDowned && !onTouched && !hasTriggeredClick) {
             Touched(true);
             click();
         }
@@ -114,6 +116,7 @@ export default function Banner() {
     
     const handleTouchEnd = () => {
       Touched(false);
+      setHasTriggeredClick(false);
     };
 
     const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
