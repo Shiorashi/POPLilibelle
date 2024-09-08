@@ -95,8 +95,10 @@ export default function Banner() {
         if (target.tagName === 'INPUT' || target.tagName === 'BUTTON') {
             return;
         }
-        MouseDown(true);
-        click();
+        if (!onTouched && !onMouseDowned) {
+            MouseDown(true);
+            click();
+        }
     };
 
     const handleMouseUp = () => {
@@ -104,7 +106,10 @@ export default function Banner() {
     };
 
     const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
-      Touched(true);
+        if (!onMouseDowned && !onTouched) {
+            Touched(true);
+            click();
+        }
     };
     
     const handleTouchEnd = () => {
