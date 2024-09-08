@@ -24,8 +24,7 @@ export default function Banner() {
     const [token, setToken] = useState('');
     const [leaderboard, setLeaderboard] = useState<User[]>([]);
     const [showLeaderboard, setShowLeaderboard] = useState(false);
-    const [hasTriggeredClick, setHasTriggeredClick] = useState(false);
-    
+    const [isTouchDevice, setIsTouchDevice] = useState(false);
 
     const fetchLeaderboard = async () => {
       try {
@@ -78,7 +77,7 @@ export default function Banner() {
         // Reset animation state after a short delay
         setTimeout(() => {
             setIsAnimating(false);
-        }, 50); // Animation duration
+        }, 15); // Animation duration
     };
 
     useEffect(() => {
@@ -88,6 +87,8 @@ export default function Banner() {
     }, [incrementClickDebounced]);
 
     const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+        if (isTouchDevice) return;
+
         const target = e.target as HTMLElement;
         if (target.closest('.leaderboard-toggle')) {
           e.stopPropagation(); // Prevent counting click
@@ -96,27 +97,34 @@ export default function Banner() {
         if (target.tagName === 'INPUT' || target.tagName === 'BUTTON') {
             return;
         }
-        if (!onTouched && !onMouseDowned && !hasTriggeredClick) {
-            MouseDown(true);
-            click();
-        }
+        MouseDown(true);
+        click();
     };
 
     const handleMouseUp = () => {
         MouseDown(false);
-        setHasTriggeredClick(false);
     };
 
     const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
-        if (!onMouseDowned && !onTouched && !hasTriggeredClick) {
-            Touched(true);
-            click();
+        setIsTouchDevice(true); // Set it as a touch device
+        Touched(true);
+        const audio = new Audio('/sound/PopSound.mp3');
+        audio.play(); // Play sound once when touch starts
+        addClick(clicked + 1);
+        setIsAnimating(true);
+    
+        if (isLoggedIn) {
+            incrementClick(token);
         }
+    
+        // Reset animation state after a short delay
+        setTimeout(() => {
+            setIsAnimating(false);
+        }, 50); // Animation duration
     };
     
     const handleTouchEnd = () => {
       Touched(false);
-      setHasTriggeredClick(false);
     };
 
     const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
