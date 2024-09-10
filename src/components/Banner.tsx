@@ -77,7 +77,7 @@ export default function Banner() {
     const click = async () => {
         if (showLeaderboard) return;
         if (isInitialized) {
-        const audio = new Audio('./sound/PopSound.mp3');
+        const audio = new Audio('./sound/LiliPopSound.wav');
         audio.play();
         
         addClick(clicked + 1);
