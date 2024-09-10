@@ -11,7 +11,7 @@ import incrementClick from '@/libs/incrementClick';
 
 const nunito = Nunito({
   subsets: ['latin'],
-  weight: ['900'], // Include weights you need
+  weight: ['900'],
 });
 export default function Banner() {
     const [clicked, addClick] = useState(0);
@@ -25,64 +25,81 @@ export default function Banner() {
     const [leaderboard, setLeaderboard] = useState<User[]>([]);
     const [showLeaderboard, setShowLeaderboard] = useState(false);
     const [isTouchDevice, setIsTouchDevice] = useState(false);
+    const [isInitialized, setIsInitialized] = useState(false);
 
-    const fetchLeaderboard = async () => {
-      try {
-          const response = await fetch(`${process.env.BACKEND_URL}/api/v1/users`);
-          const data = await response.json();
-          // Sort users by click count in descending order
-          const sortedUsers = (data.data as User[]).sort((a, b) => b.clicked - a.clicked);
-          setLeaderboard(sortedUsers);
-      } catch (err) {
-          console.error('Failed to fetch leaderboard:', err);
-      }
-    };
 
     useEffect(() => {
-        if (isLoggedIn) {
-            fetchLeaderboard();
+        const storedClicks = localStorage.getItem('clicked');
+        if (storedClicks) {
+          addClick(parseInt(storedClicks, 10));
         }
-    }, [isLoggedIn]);
+        setIsInitialized(true);
+      }, []);
 
-    const toggleLeaderboard = () => {
-      setShowLeaderboard(!showLeaderboard);
-      if (!showLeaderboard) {
-          fetchLeaderboard();
-      }
-    };
+    // const fetchLeaderboard = async () => {
+    //   try {
+    //       const response = await fetch(`${process.env.BACKEND_URL}/api/v1/users`);
+    //       const data = await response.json();
+    //       // Sort users by click count in descending order
+    //       const sortedUsers = (data.data as User[]).sort((a, b) => b.clicked - a.clicked);
+    //       setLeaderboard(sortedUsers);
+    //   } catch (err) {
+    //       console.error('Failed to fetch leaderboard:', err);
+    //   }
+    // };
+
+    // useEffect(() => {
+    //     if (isLoggedIn) {
+    //         fetchLeaderboard();
+    //     }
+    // }, [isLoggedIn]);
+
+    // const toggleLeaderboard = () => {
+    //   setShowLeaderboard(!showLeaderboard);
+    //   if (!showLeaderboard) {
+    //       fetchLeaderboard();
+    //   }
+    // };
     
     const incrementClickDebounced = useCallback(
         debounce((token) => {
-            incrementClick(token); // Debounce only the API call
-        }, 1000), // 1-second debounce
+            incrementClick(token);
+        }, 1000),
         []
     );
 
+    useEffect(() => {
+        if (isInitialized) {
+            localStorage.setItem('clicked', (clicked).toString());
+        }
+      }, [clicked,isInitialized]);
+      
     const click = async () => {
         if (showLeaderboard) return;
- 
+        if (isInitialized) {
         const audio = new Audio('/sound/PopSound.mp3');
         audio.play();
+        
         addClick(clicked + 1);
         setIsAnimating(true);
 
-        try {
-            if (isLoggedIn) {
-                await incrementClick(token); // Increment click count in backend if logged in
-            }
-        } catch (err) {
-            console.error('Error incrementing click:', err);
-        }
+        // try {
+        //     if (isLoggedIn) {
+        //         await incrementClick(token);
+        //     }
+        // } catch (err) {
+        //     console.error('Error incrementing click:', err);
+        // }
 
-        // Reset animation state after a short delay
         setTimeout(() => {
             setIsAnimating(false);
-        }, 15); // Animation duration
+        }, 15);
+        }
     };
 
     useEffect(() => {
         return () => {
-            incrementClickDebounced.cancel(); // Cleanup debounce on unmount
+            incrementClickDebounced.cancel();
         };
     }, [incrementClickDebounced]);
 
@@ -91,8 +108,8 @@ export default function Banner() {
 
         const target = e.target as HTMLElement;
         if (target.closest('.leaderboard-toggle')) {
-          e.stopPropagation(); // Prevent counting click
-          return; // Exit early
+          e.stopPropagation();
+          return;
         }
         if (target.tagName === 'INPUT' || target.tagName === 'BUTTON') {
             return;
@@ -106,52 +123,40 @@ export default function Banner() {
     };
 
     const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
-        setIsTouchDevice(true); // Set it as a touch device
+        setIsTouchDevice(true);
         Touched(true);
-        const audio = new Audio('/sound/PopSound.mp3');
-        audio.play(); // Play sound once when touch starts
-        addClick(clicked + 1);
-        setIsAnimating(true);
-    
-        if (isLoggedIn) {
-            incrementClick(token);
-        }
-    
-        // Reset animation state after a short delay
-        setTimeout(() => {
-            setIsAnimating(false);
-        }, 50); // Animation duration
+        click();
     };
     
     const handleTouchEnd = () => {
       Touched(false);
     };
 
-    const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        setError('');
+    // const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+    //     e.preventDefault();
+    //     setError('');
 
-        try {
-            const data = await userLogIn(username);
-            setToken(data.token);
-            setIsLoggedIn(true);
-            addClick(data.clicked);
-        } catch (err) {
-            setError('An error occurred. Please try again.');
-        }
-    };
+    //     try {
+    //         const data = await userLogIn(username);
+    //         setToken(data.token);
+    //         setIsLoggedIn(true);
+    //         addClick(data.clicked);
+    //     } catch (err) {
+    //         setError('An error occurred. Please try again.');
+    //     }
+    // };
 
-    const handleLogout = async () => {
-        try {
-            await userLogOut();
-            setIsLoggedIn(false);
-            setUsername('');
-            setToken('');
-            addClick(0);
-        } catch (err) {
-            setError('An error occurred during logout. Please try again.');
-        }
-    };
+    // const handleLogout = async () => {
+    //     try {
+    //         await userLogOut();
+    //         setIsLoggedIn(false);
+    //         setUsername('');
+    //         setToken('');
+    //         addClick(0);
+    //     } catch (err) {
+    //         setError('An error occurred during logout. Please try again.');
+    //     }
+    // };
 
     return (
         <div 
@@ -162,17 +167,17 @@ export default function Banner() {
             onTouchEnd={handleTouchEnd}
             style={{ userSelect: 'none' }}
         >
-            <div className={`h-16 flex flex-row fixed top-0 left-0 right-0 z-30`}>
+            {/* <div className={`h-16 flex flex-row fixed top-0 left-0 right-0 z-30`}>
               <div className="m-5 leaderboard-toggle cursor-pointer">
                   <Image 
                       src={'/img/Ranking.png'} 
                       alt="showLeaderboard"
-                      width={50} // Set your desired width
-                      height={50} // Set your desired height
+                      width={50}
+                      height={50}
                       className="hover:opacity-75 transition-opacity"
                       onClick={(e) => {
-                        e.stopPropagation(); // Prevent click from counting
-                        toggleLeaderboard(); // Call the function to toggle the leaderboard
+                        e.stopPropagation();
+                        toggleLeaderboard();
                       }}
         
                   />
@@ -208,11 +213,11 @@ export default function Banner() {
                         </div>
                     )}
                 </div>
-            </div>
+            </div> */}
             <div>
                 {/* Background Image */}
                 <Image 
-                    src="/img/LiliRoom.png" 
+                    src="./img/LiliRoom.png" 
                     alt="cover" 
                     fill={true} 
                     sizes="100vw" 
@@ -234,7 +239,7 @@ export default function Banner() {
                 {/* Popcat Image */}
                 <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2">
                     <Image 
-                        src={(onMouseDowned || onTouched) && !showLeaderboard ? "/img/LiliPOP_2.png" : "/img/LiliPOP_1.png"} 
+                        src={(onMouseDowned || onTouched) && !showLeaderboard ? "./img/LiliPOP_2.png" : "./img/LiliPOP_1.png"} 
                         alt="POP_Lili" 
                         width={700}
                         height={700}
@@ -244,7 +249,7 @@ export default function Banner() {
                 </div>
             </div>
             {/* Leaderboard Popup */}
-            {showLeaderboard && (
+            {/* {showLeaderboard && (
                 <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-opacity-80 bg-pink-200 p-8 rounded shadow-lg z-50 w-[40vw] h-[40vh] overflow-y-auto scrollbar-thin scrollbar-thumb-pink-500 scrollbar-track-pink-100 border-4 border-pink-300">
                   <div className="bg-pink-200 p-4 rounded bg-opacity-0">
                     <h2 className="text-2xl font-bold mb-4 text-center">Leaderboard</h2>
@@ -264,7 +269,7 @@ export default function Banner() {
                         
                     </div>
                 </div>
-            )}
+            )} */}
         </div>
     );
 }
